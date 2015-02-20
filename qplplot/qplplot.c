@@ -376,12 +376,12 @@ Z K0(gxax){PLINT digmax,digits; plgxax(&digmax,&digits);
     kS(rk)[0]=ss("digmax"); kI(rv)[0]=digmax;
     kS(rk)[1]=ss("digits"); kI(rv)[1]=digits;
     R xD(rk,rv);}
-Z K0(gyax){PLINT digmax,digits; plgxax(&digmax,&digits);
+Z K0(gyax){PLINT digmax,digits; plgyax(&digmax,&digits);
     K rk=ktn(KS,2); K rv=ktn(KI,2);
     kS(rk)[0]=ss("digmax"); kI(rv)[0]=digmax;
     kS(rk)[1]=ss("digits"); kI(rv)[1]=digits;
     R xD(rk,rv);}
-Z K0(gzax){PLINT digmax,digits; plgxax(&digmax,&digits);
+Z K0(gzax){PLINT digmax,digits; plgzax(&digmax,&digits);
     K rk=ktn(KS,2); K rv=ktn(KI,2);
     kS(rk)[0]=ss("digmax"); kI(rv)[0]=digmax;
     kS(rk)[1]=ss("digits"); kI(rv)[1]=digits;
@@ -979,7 +979,7 @@ Z qzpi plplotapi[]={
     {"pl","box",box,6},
     {"pl","box3",box3,3},
     {"pl","btime",btime,1},
-    {"pl","calc_world",calc_world,0},
+    {"pl","calc_world",calc_world,2},
     {"pl","clear",clear,0},
     {"pl","col0",col0,1},
     {"pl","col1",col1,1},
@@ -1085,7 +1085,7 @@ Z qzpi plplotapi[]={
     {"pl","scol0a",scol0a,5},
     {"pl","scolbg",scolbg,3},
     {"pl","scolbga",scolbga,4},
-    {"pl","scolar",scolor,1},
+    {"pl","scolor",scolor,1},
     {"pl","scompression",scompression,1},
     {"pl","sdev",sdev,1},
     {"pl","sdidev",sdidev,4},

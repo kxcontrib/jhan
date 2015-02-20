@@ -5,6 +5,11 @@ ae:{if[not x~y;'`fail]}
 
 \l qplplot.q
 
+r1:0 255i;
+g1:255 0i;
+b1:0 0i;
+a1:1 1f;
+
 // Test setting / getting familying parameters before plinit
 // Save values set by plparseopts to be restored later.
 fmb0:pl.gfam[];
@@ -15,14 +20,14 @@ bmax0:fmb0`bmax;
 fam1:0i;
 num1:10i;
 bmax1:1000i;
-fmb1:(`fam1`num1`bmax1)!(0i;10i;1000i);
+fmb1:(`fam`num`bmax)!(fam1;num1;bmax1);
 pl.sfam[fam1; num1; bmax1];
 
 // Retrieve the same values?
 fmb2:pl.gfam[];
 ae[fmb1; fmb2];
 // Restore values set initially by plparseopts.
-plsfam[fam0; num0; bmax0];
+pl.sfam[fam0; num0; bmax0];
 
 // Test setting / getting page parameters before plinit
 // Save values set by plparseopts to be restored later.
@@ -34,7 +39,8 @@ yleng1:200i;
 xoff1:10i;
 yoff1:20i;
 
-gpage1:(`xp1;`yp1`xleng`yleng`xoff`yoff)!(200.;200.;400i;200i;10i;20i);
+// Retrieve the same values?
+gpage1:(`xp`yp`xleng`yleng`xoff`yoff)!(xp1;yp1;xleng1;yleng1;xoff1;yoff1);
 pl.spage[xp1; yp1; xleng1; yleng1; xoff1; yoff1];
 
 // Retrieve the same values?
@@ -43,7 +49,7 @@ gpage2:pl.gpage[];
 ae[gpage1; gpage2];
 
 // Restore values set initially by plparseopts.
-plspage[xp0; yp0; xleng0; yleng0; xoff0; yoff0];
+pl.spage[gpage`xp; gpage`yp; gpage`xleng; gpage`yleng; gpage`xoff; gpage`yoff];
 
 // Test setting / getting compression parameter across plinit.
 compression1:95i;
@@ -65,49 +71,75 @@ pl.scmap1[r1; g1; b1; 2];
 pl.scmap1a[r1; g1; b1; a1; 2];
 
 level2:pl.glevel[];
-ae[level; level2];
+ae[level2; 1i];
 
 pl.adv[0];
 pl.vpor[0.01; 0.99; 0.02; 0.49];
 vpd:pl.gvpd[];
-ae[vpd`xmin; 0.01];
-ae[vpd`xmax; 0.99];
-ae[vpd`ymin; 0.02];
-ae[vpd`ymax; 0.49];
+ae[vpd`p_xmin; 0.01];
+ae[vpd`p_xmax; 0.99];
+ae[vpd`p_ymin; 0.02];
+ae[vpd`p_ymax; 0.49];
 
-xmid:0.5*(vpd`xmin + vpd`xmax);
-ymid:0.5*(vpd`ymin + vpd`ymay);
+xmid:0.5*((vpd`p_xmin) + vpd`p_xmax);
+ymid:0.5*((vpd`p_ymin) + vpd`p_ymay);
 
 pl.wind[0.2; 0.3; 0.4; 0.5];
 vpw:pl.gvpw[];
-ae[vpw`xmin; 0.2];
-ae[vpw`xmax; 0.3];
-ae[vpw`ymin; 0.4];
-ae[vpw`ymax; 0.5];
+ae[vpw`p_xmin; 0.2];
+ae[vpw`p_xmax; 0.3];
+ae[vpw`p_ymin; 0.4];
+ae[vpw`p_ymax; 0.5];
 
+// Get world coordinates for middle of viewport
+w:pl.calc_world[xmid; ymid];
+if[(abs[(w`wx) - 0.5 * ((w`xmin) + w`xmax)] > 1.0e-5) or abs[(w`wy) - 0.5 * ((w`ymin) + w`ymax)] > 1.0e-5; `fail];
 
-world:pl.calc_world[xmid; ymid];
+// Retrieve and print the name of the output file (if any).
+// This goes to stderr not stdout since it will vary between tests and
+// we want stdout to be identical for compare test.
+fnam:pl.gfnam[];
+-1 string fnam;
 
-fnam:pl.gfnam[];Dunlap
--1 fnam;
+// Set and get the number of digits used to display axis labels
+// Note digits is currently ignored in pls[xyz]ax and
+// therefore it does not make sense to test the returned
+// value
+pl.sxax[3; 0];
+xax:pl.gxax[];
+ae[xax`digmax; 3i];
+
+pl.syax[4; 0];
+yax:pl.gyax[];
+ae[yax`digmax; 4i];
+
+pl.szax[5; 0]
+zax:pl.gzax[];
+ae[zax`digmax; 5i];
+
+pl.sdidev[0.05; pl`PL_NOTSET; 0.1; 0.2];
+didev:pl.gdidev[];
+ae[didev`p_mar; 0.05];
+ae[didev`p_jx; 0.1];
+ae[didev`p_jy; 0.2];
 
 pl.sdiori 1.0;
 diori:pl.gdiori[];
-ae[diori`ori; 1.0];
+ae[diori; 1.0];
 
 pl.sdiplt[0.1; 0.2; 0.9; 0.8];
 diplt:pl.gdiplt[];
-ae[diplt`xmin; 0.1];
-ae[diplt`xmax; 0.9];
-ae[diplt`ymin; 0.2];
-ae[diplt`ymax; 0.8];
+ae[diplt`p_xmin; 0.1];
+ae[diplt`p_xmax; 0.9];
+ae[diplt`p_ymin; 0.2];
+ae[diplt`p_ymax; 0.8];
 
 pl.sdiplz[0.1; 0.1; 0.9; 0.9];
-diplt:pl.gdiplt[];
-ae[abs[zxmin - (xmin + (xmax - xmin) * 0.1)] > 1.0E-5 ||
-         abs[zxmax - (xmin + (xmax - xmin) * 0.9)] > 1.0E-5 ||
-         abs[zymin - (ymin + (ymax - ymin) * 0.1)] > 1.0E-5 ||
-         abs[zymax - (ymin + (ymax - ymin) * 0.9)] > 1.0E-5]
+dipltz:pl.gdiplt[];
+ae[(abs[(dipltz`p_xmin) - ((diplt`p_xmin) + ((diplt`p_xmax) - diplt`p_xmin) * 0.1)] > 1.0e-5) or
+         (abs[(dipltz`p_xmax) - ((diplt`p_xmin) + ((diplt`p_xmax) - diplt`p_xmin) * 0.9)] > 1.0e-5) or
+         (abs[(dipltz`p_ymin) - ((diplt`p_ymin) + ((diplt`p_ymax) - diplt`p_ymin) * 0.1)] > 1.0e-5) or
+         (abs[(dipltz`p_ymax) - ((diplt`p_ymin) + ((diplt`p_ymax) - diplt`p_ymin) * 0.9)] > 1.0e-5)];
 
 
 pl.scolbg[10; 20; 30];
@@ -117,9 +149,9 @@ ae[rgb0; rgb];
 
 pl.scolbga[20; 30; 40; 0.5];
 rgba:pl.gcolbga[];
-rgba0:(`r;`g`b;`a)!(20i;30i;40i;0.5);
+rgba0:(`r`g`b`a)!(20i;30i;40i;0.5);
 ae[rgba0; rgba];
-pl.end();
+pl.end[];
 
 \\
 // $Id: x31c.c 11680 2011-03-27 17:57:51Z airwin $
