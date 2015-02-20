@@ -71,8 +71,8 @@ k:0; do[2;
         pl.wind[-1.0; 1.0; -1.0; 1.5];
         // pl.w3d takes three arguments.
         pl.w3d[(1.0; 1.0; 1.2); (-3.0; 3.0; -3.0; 3.0; zmin; zmax); (alt[k]; az[k])];
-        // pl.box3 takes three arguments.
-        pl.box3[(`$"bnstu"; `$"x axis"; 0.0; 0); (`$"bnstu"; `$"y axis"; 0.0; 0); (`$"bcdmnstuv"; `$"z axis"; 0.0; 4)];
+        // N.B. pl.box3 takes three arguments.
+        pl.box3[(`$"bnstu"; `$"x axis"; 0.0; 0i); (`$"bnstu"; `$"y axis"; 0.0; 0i); (`$"bcdmnstuv"; `$"z axis"; 0.0; 4i)];
         pl.col0[pl`yellow];
         // wireframe plot
         if[i=0; pl.mesh[x; y; z; XPTS; YPTS; opt[k]]];

@@ -865,7 +865,7 @@ Z K5(surf3d){
     plsurf3d(xF,yF,(const PLFLT*const*)f,znx,zny,z4i,z5F,z5n);
     plFree2dGrid(f,znx,zny);
     RZ;}
-// N.B. pl.surf3d[x; y; z; opt; clevel; (xmin;xmax); ymin;ymax)]
+// N.B. pl.surf3dl[x; y; z; opt; clevel; (indexxmin;indexxmax); indexymin; indexymax]
 Z K8(surf3dl){
     PLFLT**f;
     I znx=zn,zny=kK(z)[0]->n;
