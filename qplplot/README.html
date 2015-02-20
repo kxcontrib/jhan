@@ -1,14 +1,24 @@
 <h1>Qplplot</h1>
 
-<p>Q bindings of <a href="http://plplot.sourceforge.net">PLplot graphical data plotting library</a>.</p>
+<p>Q bindings of
+<a href="http://plplot.sourceforge.net">PLplot graphical data plotting library</a>.</p>
 
-<p>PLplot provides C API to plot data. Qplplot is q bindings of PLplot for plotting data both in interactive mode inside kdb+ sessions and in batch mode from <code>*.q</code> scripts.</p>
+<p>PLplot provides C API to plot data. Qplplot is q bindings of PLplot for plotting
+data both in interactive mode inside kdb+ sessions and in batch mode from <code>*.q</code>
+scripts.</p>
 
-<p>A notable feature of PLplot is its speed. For example, <code>plhist()</code> computes distribution or frequency of a data array of 100 million elements and makes a histogram plot in subsecond on a modern laptop. (Sandy Bridge i7 from 2012 takes about 600ms). In this example, there is no copying or transfering data from q to PLplot as qplplot passes a pointer so that plotting is done in-place data managed by kdb+. Compare running <code>x05.q</code> and <code>x05w100M.q</code>.</p>
+<p>A notable feature of PLplot is its speed. For example, <code>plhist()</code> computes
+distribution or frequency of a data array of 100 million elements and makes a
+histogram plot in a window in subsecond on a modern laptop.
+(Sandy Bridge i7 from 2012 takes about 600ms).
+There is no copying or transfering data from q to PLplot as
+qplplot passes a pointer so that plotting is done with
+in-place data managed by kdb+. Compare running <code>x05.q</code> and <code>x05w100M.q</code>.</p>
 
 <h2>version</h2>
 
-<p>As of today (2015.02.16), qplplot supports most of PLplot 5.10, the latest public release.</p>
+<p>As of today (2015.02.16), qplplot supports most of PLplot 5.10,
+the latest public release.</p>
 
 <h1>Qplplot Documentation</h1>
 
@@ -31,24 +41,27 @@ pl`OPTION / matches OPTION C symbol exported by plplot.h
 
 <h2>PLplot vs qplplot</h2>
 
-<p>Qplplot API mirrors that of PLplot so that users can refer to <a href="http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/API.html">PLplot API reference</a>.</p>
+<p>Qplplot API mirrors that of PLplot so that users can refer to
+<a href="http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/API.html">PLplot API reference</a>.</p>
 
 <p><code>pl.functionname[]</code> corresponds to <code>plfunctionanme()</code> in PLplot. For example,</p>
 
 <pre><code>PLplot in C             qplplot
--------------------------------------------
+-----------------------------------------------
 plinit()                pl.init[]
 plline(n, x, y)         pl.line[n; x; y]
 </code></pre>
 
 <p>Translating API of PLplot to q or qplplot is easy once types are understood:</p>
 
-<pre><code>PLplot types        q types
--------------------------------------------
-PLINT               `int atom or type -6h
-PLFLT               `float atom or type -9h
-const PLFLT*        `float vector or 9h
-char*               `sym or -11h
+<pre><code>PLplot types            q types
+-----------------------------------------------
+(PLINT, input)          `int atom or type -6h
+(PLFLT, input)          `float atom or type -9h
+(PLBOOL, input)         `int atom or type -9h, (NOT `boolean or -1h)
+(const PLFLT *, input)  `float vector or 9h
+(char *, input)         `sym or -11h
+(char *, output)        `sym or -11h, N.B. output parameter
 </code></pre>
 
 <p>Therefore <code>plline(PLINT n, const PLFLT* x, const PLFLT* y)</code> would be translated into q as
@@ -70,41 +83,80 @@ pl.end[] / plend();
 \\
 </code></pre>
 
-<p>Many PLplot APIs use PLplot's exported C symbols or constants, for example, <code>plmesh()</code> expects a <code>PLINT</code> <code>opt</code> argument that can be either <code>DRAW_LINEX</code>, <code>DRAW_LINEY</code>, or <code>DRAW_LINEXY</code>. In qplplot's <code>pl.mesh[]</code>, these <code>opt</code> values are q symbol keys to <code>pl</code>: <code>pl`DRAW_LINEX</code>, <code>pl`DRAW_LINEY</code> or <code>pl`DRAW_LINEXY</code>.</p>
+<p>Many PLplot APIs use PLplot's exported C symbols or constants, for example, <code>plmesh()</code>
+expects a <code>PLINT</code> <code>opt</code> argument that can be either <code>DRAW_LINEX</code>, <code>DRAW_LINEY</code>, or <code>DRAW_LINEXY</code>.
+In qplplot's <code>pl.mesh[]</code>, these <code>opt</code> values are q symbol keys to <code>pl</code>:
+<code>pl`DRAW_LINEX</code>, <code>pl`DRAW_LINEY</code> or <code>pl`DRAW_LINEXY</code>.</p>
 
-<p><code>plcol0()</code> expects an integer argument representing a color value. qplplot lets users to use color names listed in the <code>plcol0</code> reference, e.g. <code>pl.col0[0]</code> works as well as <code>pl.col0[pl`black]</code>.</p>
+<p><code>plcol0()</code> expects an integer argument representing a color.
+Qplplot lets users to use color names listed in the <code>plcol0</code> reference,
+e.g. <code>pl.col0[0]</code> works as well as <code>pl.col0[pl`black]</code>.</p>
 
 <p>Most PLplot APIs return void but some return an atom:</p>
 
-<pre><code>q)pl.gver[] / get version number string
+<pre><code>plgver(char* p_ver);
+    p_ver (char *, output)
+           Pointer to the current library version number.
+</code></pre>
+
+<p>Qplplot's counterpart returns output parameter <code>p_ver</code> as a symbol:</p>
+
+<pre><code>q)pl.gver[]
 `5.10.0
 </code></pre>
 
-<p>Some other APs return multiple values via output pointers. These multiple return values are wrapped in a dictionary in qplplot. For example,</p>
+<p>Some other APIs return multiple values via output parameters.
+These multiple return values are wrapped in a dictionary in qplplot. For example,</p>
 
 <pre><code>q)pl.gchr[] / plgchr(&amp;p_def, &amp;p_ht); in C
 p_def| 7.5
 p_ht | 7.5
 </code></pre>
 
+<p>Notice that symbol keys of the output dictionary match the names of output
+parameters in PLplot's API reference.</p>
+
 <h2>further hints for translation</h2>
 
 <ul>
-<li><code>plg*</code> APIs are usually getter functions, e.g. <code>plgver()</code> or <code>pl.gver[]</code> above.</li>
-<li><code>pls*</code> APIs are usually setter functions, e.g. <code>plsdev(const char* devname)</code> or <code>pl.sdev[`devname]</code>.</li>
+<li>Most PLplot API names are abbreviations:
+<ul>
+<li><code>plg*()</code> APIs are usually getter functions, e.g. <code>plgver()</code> or <code>pl.gver[]</code> above.</li>
+<li><code>pls*()</code> APIs are usually setter functions, e.g. <code>plsdev(const char* devname)</code> or <code>pl.sdev[`devname]</code>.</li>
+</ul></li>
+<li>Examples resemble PLplot's original examples closely. See Examples section below.</li>
+</ul>
+
+<h2>types or <code>`int</code> vs <code>`long</code></h2>
+
+<ul>
+<li><code>PLINT</code> atom can be passed as <code>`long</code> or <code>-7h</code> as long as its value fits
+<code>`int</code>. This leniency lets users skip adding <code>i</code>-suffix behind every integer
+that is <code>`long</code> by default in Kdb+ 3.0 or later.</li>
+<li>However, if a list that expects a <code>PLINT</code> (or <code>PLBOOL</code>), make sure to use <code>
+`int</code> in q.</li>
+<li>Getters (<code>plg*()</code> or <code>pl.g*[]</code>) returning <code>PLINT</code> returns <code>`int
+</code> (see <code>x31.q</code>).</li>
 </ul>
 
 <h2>special cases</h2>
 
-<p>Because q allows up to 8 function arguments (define a function with more than 8 arguments and q returns <code>'params</code> exception), some PLplot API with more than 8 arguments deserve special attention.</p>
+<p>Because a q function allows maximum of 8 arguments
+(define a function with more than 8 arguments and q returns <code>'params</code> exception),
+some PLplot APIs with more than 8 arguments deserve special attention.</p>
 
-<p>For most PLplot APIs, qplplot preserves order, count and types of arguments of the original PLplot APIs so that PLplot's API documentation can cover qplplot's. However, PLplot APIs with more than 8 arguments are expressed differently in qplplot:</p>
+<p>For most PLplot APIs, qplplot preserves order, count and types of arguments
+of the original PLplot APIs so that PLplot's API documentation can cover qplplot's.
+However, PLplot APIs with more than 8 arguments are expressed differently in qplplot:</p>
 
 <ul>
-<li>Arguments are grouped logically into lists. See the pl.* functions below and cross-check  with PLplot's reference.</li>
+<li>Arguments are grouped logically into lists. See the <code>pl.*</code> functions below and cross-check with PLplot's reference.</li>
 <li>Often, argument for count and other bookkeeping arguments are elided.</li>
-<li>Users need to be careful with lists containing <code>PLINT</code>. From q to PLplot, an <code>`int</code> or <code>`long</code> (<code>-6h</code> or <code>-7h</code>) can be passed as an <code>PLINT</code> atom as long as its value fits. However, a list that expects a PLINT should have only <code>`int</code> from q.</li>
-<li><code>plcont()</code> uses callback function: a user-defined one as well as built-in <code>pltr0</code>, <code>pltr1</code>, <code>pltr2</code>. qplplot's pl.cont come with four functions: <code>pl.cont[]</code>, <code>pl.cont0[]</code>, <code>pl.cont1[]</code>, <code>pl.cont2[]</code>. See examples for usage (see Examples section below).</li>
+<li><code>plcont()</code> uses a callback function: a user-defined one as well as built-in
+<code>pltr0</code>, <code>pltr1</code> or, <code>pltr2</code>.
+Qplplot's <code>pl.cont*</code> come with four flavors: <code>pl.cont[]</code>, <code>pl.cont0[]</code>,
+<code>pl.cont1[]</code> and <code>pl.cont2[]</code>.
+See examples for usage (see Examples section below).</li>
 <li>Likewise for <code>plimagefr()</code>, <code>plshade()</code>, <code>plshades()</code>, <code>plvect()</code>.</li>
 <li><p>See also Bugs section below.</p>
 
@@ -158,7 +210,7 @@ plstripc[(xspec;yspec);
     (xmin;xmax;xjump; ymin;ymax);
     (xlpos;ylpos); (y_ascl;acc); (colbox;collab); (colline;styline;legline); (labx;laby;labtop)]
 pl.surf3d[x; y; z; opt; clevel]
-pl.surf3d[x; y; z; opt; clevel; (xmin;xmax); ymin;ymax)]
+pl.surf3dl[x; y; z; opt; clevel; (xmin;xmax); ymin;ymax)]
 pl.fsurf3d[x; y; z; opt; clevel]
 pl.vect[u; v; scale; pltr]; / nx=count u; ny=count v;
 pl.vect0[u; v; scale]; / nx=count u; ny=count v; pltr0 set by plvect.
@@ -170,30 +222,45 @@ pl.w3d[(basex;basey;height); (xmin;xmax;ymin;ymax;zmin;zmax); (alt;az)]
 
 <h1>Examples</h1>
 
-<p>PLplot comes with 33 examples to demonstrate its APIs. Reference for PLplot refers to these examples. Most of them have been "translated" to q. See xNN.q, where NN is a two-digit number.
-xNN.q contains <code>/ N.B.</code> comments to draw attention to exceptions listed in the previous section as well as easy-to-trigger bugs.</p>
+<p>PLplot comes with 33 examples to demonstrate its APIs. Reference for PLplot refers to these examples.
+Most of them have been "translated" to q. See <code>xNN.q</code>, where NN is a two-digit number.
+Some <code>xNN.q</code> contains <code>/ N.B.</code> comments to draw attention to exceptions
+listed in the previous section as well as easy-to-trigger bugs.</p>
 
-<p>Examples are by no means written in idiomatic q. They are resemble their C original to aid readers translate between PLplot API and qplplot counterparts.</p>
+<p>Examples are by no means written in <a href="http://kxcommunity.com/category/idioms/">idiomatic q</a>.
+They resemble their C original to help readers translate between PLplot API and qplplot counterparts.</p>
 
 <p>Once all is properly installed, try out examples:</p>
 
 <pre><code>q x01.q
 q x05.q
-q x05w100M.q
+q x05w100M.q    # x05.q with 100M data points.
 </code></pre>
 
-<p>Examples should look like the <a href="http://plplot.sourceforge.net/examples.php">PLplot's</a> if installation is successful.</p>
+<p>Compare output of examples with the <a href="http://plplot.sourceforge.net/examples.php">PLplot's</a>.</p>
+
+<h2>Drivers differences</h2>
+
+<p>PLplot supports many kinds of output drivers with various capabilities. For
+example, <code>xcairo</code> driver handles color shading (<code>x30.q</code>) and Unicode (<code>x26.q</code>) better than <code>xwin</code> one.
+However <code>xwin</code> driver can rescale graphics when its windows are
+resized, but <code>xcairo</code> cannot.</p>
 
 <h1>Installation</h1>
 
+<h2>Kdb+ 3.0 or above only</h2>
+
+<p>Qplplot supports Kdb+ 3.0 or later only.</p>
+
 <h2>Linux (Ubuntu 14.04) with kdb+ 3 or above, 32-bit (l32)</h2>
 
-<pre><code># In case, multi-arch development environment is not yet set:
-# Consult local documentation or sysadmin for more definite instructions.
+<pre><code># Multi-arch development environment should be installed:
+# Consult local documentation or sysadmin for more definitive instructions.
 sudo apt-get install gcc-multilib
 sudo apt-get install libplplot12:i386
 sudo apt-get install libplplot-dev:i386
 sudo apt-get install plplot12-driver-xwin:i386
+sudo apt-get install plplot12-driver-cairo:i386
 
 # Assuming 32-bit libplplot is installed, and code.kx.com svn is set locally.
 export KXSVN=/local/path/to/svn/from/kx.com
@@ -226,19 +293,35 @@ mv qplplot.so $HOME/q/m32/qplplot.so # do not keep .so in $PWD (q gets confused)
 
 <p>PLplot supports Windows but qplplot has not been built nor tested on Windows.</p>
 
-<h2>64-bit kdb+ for Ubuntu/Linux</h2>
+<h2>64-bit kdb+ support</h2>
 
-<p>Because qplplot has not been built nor tested with 64-bit kdb+. <code>sudo apt-get install</code> sequence should be changed to drop <code>:i386</code> suffixes. gcc incantation above without the <code>-m32</code> flag to gcc should suffice.</p>
+<p>Qplplot has not been built nor tested with 64-bit kdb+.
+For 64-bit kdb+,</p>
+
+<ul>
+<li>A 64-bit version of PLplot needs to be installed:
+<ul>
+<li>For example, change <code>sudo apt-get install ...</code> on Ubuntu to drop <code>:i386</code> suffixes.</li>
+</ul></li>
+<li>Change gcc invocation:
+<ul>
+<li>Drop <code>-m32</code> flag.</li>
+<li>Instead of <code>$KXSVN/kx/kdb+/X32</code>, use <code>$KXSVN/kx/kdb+/X64</code> with <code>X</code> being either
+<code>l</code> or <code>m</code> (and maybe <code>w</code> in the future).</li>
+</ul></li>
+</ul>
 
 <h1>Bugs</h1>
 
 <h2>missing APIs and their examples</h2>
 
 <ul>
-<li>A few PLplot APIs are not yet implemented: <code>plmap()</code>, <code>plot3dcl()</code>, <code>plslabelfunc()</code>, <code>plsmem()</code>, <code>plsmema()</code>. Probably <code>plsmem*</code> APIs will remain unimplemented as they are meant for memory access from C API.</li>
+<li>A few PLplot APIs are not yet implemented: <code>plmap()</code>, <code>plot3dcl()</code>, <code>plslabelfunc()</code>, <code>plsmem()</code>, <code>plsmema()</code>.
+Probably <code>plsmem*</code> APIs will remain unimplemented as they are meant for memory access from C API.</li>
 <li><code>plimage()</code> example is not translated yet.</li>
-<li><code>plparseopts()</code> is not yet tested.</li>
-<li>Not yet translated examples: <code>x19.q</code>, <code>x20.q</code>, <code>x23.q</code>, <code>x24.q</code>, <code>x27.q</code>, <code>x28.q</code>, <code>x33.q</code>.</li>
+<li><code>plparseopts()</code> is not yet tested. (Future design decision: whether or
+not integrate <code>plparseopts()</code> with q's own command line options parsing feature).</li>
+<li>Not yet translated examples: <code>x08.q</code>, <code>x19.q</code>, <code>x20.q</code>, <code>x23.q</code>, <code>x24.q</code>, <code>x27.q</code>, <code>x28.q</code>, <code>x33.q</code>.</li>
 </ul>
 
 <h2>segfaults</h2>
@@ -304,6 +387,15 @@ should be <code>PLFLT</code> or <code>`float</code>, not <code>PLINT</code> or <
 
 <p><code>pl.line[K; x; y; unnecessaryargs]</code> will generate <code>'rank</code> error because <code>pl.line[]</code> expects 3 arguments.</p>
 
+<h2>better documentation of callback function usage</h2>
+
+<p>Examples in q need more comments on how to define callback functions in q.</p>
+
+<h2>more consistent usage pattern of translating PLplot <code>NULL</code> to q</h2>
+
+<p>Some PLplot APIs use <code>NULL</code> for special values. Examples in q need more
+comments and consistent translations.</p>
+
 <h1>Notes on Implementation</h1>
 
 <ul>
@@ -312,7 +404,11 @@ should be <code>PLFLT</code> or <code>`float</code>, not <code>PLINT</code> or <
 <li><code>qplplot.q</code> -- q wrapper for qplplot and plopts.q, a dictionary named <code>pl</code>.</li>
 </ul>
 
-<p><code>qplplot.c</code> needs trimming as it is currently 1166 lines covering 180+ APIs. There are 95 <code>#define</code> macros and 200 lines for exporting <code>pl</code> dictionary. Most of PLplot APIs are covered in one-liners but there are quite a bit of repetitions in constructing return dictionaries and converting 2-D matrix inputs.</p>
+<p><code>qplplot.c</code> needs trimming as it is currently 1166 lines covering 180+ APIs.
+There are 95 <code>#define</code> macros and 200 lines for exporting <code>pl</code> dictionary.
+Most of PLplot APIs are covered in one-liners
+but there are quite a bit of repetitions in constructing return dictionaries
+and converting 2-D matrix inputs.</p>
 
 <h1>Future Plan</h1>
 
@@ -330,8 +426,8 @@ should be <code>PLFLT</code> or <code>`float</code>, not <code>PLINT</code> or <
 
 <h1>Copyright</h1>
 
-<p>Qplplot is copyright (c) 2015 Jaeheum Han</p>
+<p>Qplplot is copyright (c) 2015 Jaeheum Han All rights reserved.</p>
 
 <h1>Contact</h1>
 
-<p>Email: Jay Han <a href="&#109;&#x61;&#105;&#108;&#x74;&#111;:&#106;a&#x79;&#104;&#x61;&#x6E;&#64;&#103;m&#97;&#x69;&#x6C;&#46;&#99;&#111;&#109;">&#106;a&#x79;&#104;&#x61;&#x6E;&#64;&#103;m&#97;&#x69;&#x6C;&#46;&#99;&#111;&#109;</a></p>
+<p>Email: Jay Han <a href="&#x6D;&#x61;&#105;&#x6C;&#116;&#111;:&#106;&#x61;&#121;&#104;&#97;&#x6E;&#64;&#103;&#x6D;&#97;&#x69;&#108;&#46;&#99;&#x6F;&#x6D;">&#106;&#x61;&#121;&#104;&#97;&#x6E;&#64;&#103;&#x6D;&#97;&#x69;&#108;&#46;&#99;&#x6F;&#x6D;</a></p>
