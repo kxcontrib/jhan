@@ -65,8 +65,8 @@ Here is a short example that draws a random walk across 1000 points:
     K:1000
     x:K?1f
     y:K?1f
-    pl.line[K;x;y] / plline(); // random walk across 1000 points.
-    pl.lab[`$"#frValue"; `$"#frFrequency"; `$"#frPLplot 10M Randon Numbers Histogram"]
+    pl.line[K;x;y] / plline(PLINT n, const PLFLT*, const PLFLT* y); // draw linesrandom walk across 1000 points.
+    pl.lab[`x; `y; `$"random walk across 1000 points"]
     / pllab(const char* xlabel, const char* ylabel, const char* tlabel);
     pl.end[] / plend();
     \\
@@ -181,7 +181,7 @@ However, PLplot APIs with more than 8 arguments are expressed differently in qpl
             (xmin; xmax; ymin; ymax; clevel);
             (fill_width; cont_color; cont_width);
             fill; rectangular; xg2; yg2] / pltr2 setby pl.shades2[]
-        plstripc[(xspec;yspec);
+        pl.stripc[(xspec;yspec);
             (xmin;xmax;xjump; ymin;ymax);
             (xlpos;ylpos); (y_ascl;acc); (colbox;collab); (colline;styline;legline); (labx;laby;labtop)]
         pl.surf3d[x; y; z; opt; clevel]

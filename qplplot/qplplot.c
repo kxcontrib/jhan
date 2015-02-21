@@ -838,7 +838,7 @@ Z K4(string){plstring(xi,yF,zF,z4s); RZ;}
 Z K5(string3){plstring3(xi,yF,zF,z4F,z5s); RZ;}
 Z K4(stripa){plstripa(xi,yi,zf,z4f); RZ;}
 /*
-N.B. id:plstripc[(xspec;yspec); (xmin;xmax;xjump; ymin;ymax); (xlpos;ylpos); (y_ascl;acc); (colbox;collab); (colline;styline;legline); (labx;laby;labtop)]
+N.B. id:pl.stripc[(xspec;yspec); (xmin;xmax;xjump; ymin;ymax); (xlpos;ylpos); (y_ascl;acc); (colbox;collab); (colline;styline;legline); (labx;laby;labtop)]
         autoy; acc;
         colbox; collab;
         colline; styline; legline;

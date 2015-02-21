@@ -76,8 +76,8 @@ pl.col0 9 / plcol0(PLINT icol0); // same as pl.col0 pl`blue;
 K:1000
 x:K?1f
 y:K?1f
-pl.line[K;x;y] / plline(); // random walk across 1000 points.
-pl.lab[`$"#frValue"; `$"#frFrequency"; `$"#frPLplot 10M Randon Numbers Histogram"]
+pl.line[K;x;y] / plline(PLINT n, const PLFLT*, const PLFLT* y); // draw linesrandom walk across 1000 points.
+pl.lab[`x; `y; `$"random walk across 1000 points"]
 / pllab(const char* xlabel, const char* ylabel, const char* tlabel);
 pl.end[] / plend();
 \\
@@ -206,7 +206,7 @@ pl.shades2[a; defined;
     (xmin; xmax; ymin; ymax; clevel);
     (fill_width; cont_color; cont_width);
     fill; rectangular; xg2; yg2] / pltr2 setby pl.shades2[]
-plstripc[(xspec;yspec);
+pl.stripc[(xspec;yspec);
     (xmin;xmax;xjump; ymin;ymax);
     (xlpos;ylpos); (y_ascl;acc); (colbox;collab); (colline;styline;legline); (labx;laby;labtop)]
 pl.surf3d[x; y; z; opt; clevel]
@@ -430,4 +430,4 @@ and converting 2-D matrix inputs.</p>
 
 <h1>Contact</h1>
 
-<p>Email: Jay Han <a href="&#x6D;&#x61;&#105;&#x6C;&#116;&#111;:&#106;&#x61;&#121;&#104;&#97;&#x6E;&#64;&#103;&#x6D;&#97;&#x69;&#108;&#46;&#99;&#x6F;&#x6D;">&#106;&#x61;&#121;&#104;&#97;&#x6E;&#64;&#103;&#x6D;&#97;&#x69;&#108;&#46;&#99;&#x6F;&#x6D;</a></p>
+<p>Email: Jay Han <a href="m&#x61;&#105;&#108;&#x74;&#111;:&#106;&#x61;&#x79;&#x68;&#x61;&#110;&#64;&#103;&#x6D;a&#x69;&#108;&#46;&#99;&#111;&#x6D;">&#106;&#x61;&#x79;&#x68;&#x61;&#110;&#64;&#103;&#x6D;a&#x69;&#108;&#46;&#99;&#111;&#x6D;</a></p>
