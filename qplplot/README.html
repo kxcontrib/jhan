@@ -13,7 +13,7 @@ histogram plot in a window in subsecond on a modern laptop.
 (Sandy Bridge i7 from 2012 takes about 600ms).
 There is no copying or transfering data from q to PLplot as
 qplplot passes a pointer so that plotting is done with
-in-place data managed by kdb+. Compare running <code>x05.q</code> and <code>x05w100M.q</code>.</p>
+in-place data managed by kdb+. Compare running example scripts <code>x05.q</code> and <code>x05w100M.q</code>.</p>
 
 <h2>version</h2>
 
@@ -64,7 +64,8 @@ plline(n, x, y)         pl.line[n; x; y]
 (char *, output)        `sym or -11h, N.B. output parameter
 </code></pre>
 
-<p>Therefore <code>plline(PLINT n, const PLFLT* x, const PLFLT* y)</code> would be translated into q as
+<p>Therefore <a href="http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plline.html"><code>plline(PLINT n, const PLFLT* x, const PLFLT* y)</code></a>
+would be translated into q as
 <code>pl.line[n; x; y]</code> where <code>n:count x</code>; <code>x</code> and <code>y</code>, vectors of float (of equal counts).</p>
 
 <p>Here is a short example that draws a random walk across 1000 points:</p>
@@ -76,23 +77,26 @@ pl.col0 9 / plcol0(PLINT icol0); // same as pl.col0 pl`blue;
 K:1000
 x:K?1f
 y:K?1f
-pl.line[K;x;y] / plline(PLINT n, const PLFLT*, const PLFLT* y); // draw linesrandom walk across 1000 points.
+pl.line[K;x;y] / plline(PLINT n, const PLFLT*, const PLFLT* y); // draw lines of random walk across 1000 points.
 pl.lab[`x; `y; `$"random walk across 1000 points"]
 / pllab(const char* xlabel, const char* ylabel, const char* tlabel);
 pl.end[] / plend();
 \\
 </code></pre>
 
-<p>Many PLplot APIs use PLplot's exported C symbols or constants, for example, <code>plmesh()</code>
+<p>Many PLplot APIs use PLplot's exported C symbols or constants. For example,
+<a href="http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plmesh.html"><code>plmesh()</code></a>
 expects a <code>PLINT</code> <code>opt</code> argument that can be either <code>DRAW_LINEX</code>, <code>DRAW_LINEY</code>, or <code>DRAW_LINEXY</code>.
 In qplplot's <code>pl.mesh[]</code>, these <code>opt</code> values are q symbol keys to <code>pl</code>:
 <code>pl`DRAW_LINEX</code>, <code>pl`DRAW_LINEY</code> or <code>pl`DRAW_LINEXY</code>.</p>
 
-<p><code>plcol0()</code> expects an integer argument representing a color.
+<p><a href="http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plcol0.html"><code>plcol0()</code></a>
+expects an integer argument representing a color.
 Qplplot lets users to use color names listed in the <code>plcol0</code> reference,
 e.g. <code>pl.col0[0]</code> works as well as <code>pl.col0[pl`black]</code>.</p>
 
-<p>Most PLplot APIs return void but some return an atom:</p>
+<p>Most PLplot APIs return void but some return an output parameter (marked <code>output</code> type). For example,
+<a href="http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plgver.html"><code>plgver()</code></a></p>
 
 <pre><code>plgver(char* p_ver);
     p_ver (char *, output)
@@ -105,8 +109,8 @@ e.g. <code>pl.col0[0]</code> works as well as <code>pl.col0[pl`black]</code>.</p
 `5.10.0
 </code></pre>
 
-<p>Some other APIs return multiple values via output parameters.
-These multiple return values are wrapped in a dictionary in qplplot. For example,</p>
+<p>Some other APIs return multiple output parameters and qplplot wraps them in a dictionary. For example,
+<a href="http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plgchr.html"><code>plgchr()</code></a></p>
 
 <pre><code>q)pl.gchr[] / plgchr(&amp;p_def, &amp;p_ht); in C
 p_def| 7.5
@@ -119,6 +123,7 @@ parameters in PLplot's API reference.</p>
 <h2>further hints for translation</h2>
 
 <ul>
+<li>A qplplot function name is same as PLplot's original name except for a <code>.</code> between <code>pl</code> and the rest of the name.</li>
 <li>Most PLplot API names are abbreviations:
 <ul>
 <li><code>plg*()</code> APIs are usually getter functions, e.g. <code>plgver()</code> or <code>pl.gver[]</code> above.</li>
@@ -152,7 +157,8 @@ However, PLplot APIs with more than 8 arguments are expressed differently in qpl
 <ul>
 <li>Arguments are grouped logically into lists. See the <code>pl.*</code> functions below and cross-check with PLplot's reference.</li>
 <li>Often, argument for count and other bookkeeping arguments are elided.</li>
-<li><code>plcont()</code> uses a callback function: a user-defined one as well as built-in
+<li><a href="http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plcont.html"><code>plcont()</code></a>
+uses a callback function: a user-defined one as well as built-in
 <code>pltr0</code>, <code>pltr1</code> or, <code>pltr2</code>.
 Qplplot's <code>pl.cont*</code> come with four flavors: <code>pl.cont[]</code>, <code>pl.cont0[]</code>,
 <code>pl.cont1[]</code> and <code>pl.cont2[]</code>.
@@ -370,10 +376,11 @@ pldtik: magnitude of specified tick spacing is much too small
 Program aborted
 </code></pre>
 
-<p>According to plbox(3plplot) ytick argument (1 in the above example)
+<p>According to <a href="http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plbox.html"><code>plbox()</code></a>,
+<code>ytick</code> argument (<code>1</code> in the above example)
 should be <code>PLFLT</code> or <code>`float</code>, not <code>PLINT</code> or <code>`int</code>.</p>
 
-<p>Fix is to change <code>1</code> to <code>1f</code>:</p>
+<p>Fix <code>1</code> to <code>1f</code>:</p>
 
 <pre><code>pl.box[`$"bcnstd"; 14 * 24.0 * 60.0 * 60.0; 14; `$"bcnstv"; 1f; 4];
 </code></pre>
@@ -422,7 +429,7 @@ and converting 2-D matrix inputs.</p>
 
 <h1>License</h1>
 
-<p>Qplplot is licensed under LGPL, the same license used by PLplot. See <code>COPYING.LIB</code>.</p>
+<p>Qplplot is licensed under GNU Library General Public License 2.0, the same license used by PLplot. See <code>COPYING.LIB</code>.</p>
 
 <h1>Copyright</h1>
 
@@ -430,4 +437,4 @@ and converting 2-D matrix inputs.</p>
 
 <h1>Contact</h1>
 
-<p>Email: Jay Han <a href="m&#x61;&#105;&#108;&#x74;&#111;:&#106;&#x61;&#x79;&#x68;&#x61;&#110;&#64;&#103;&#x6D;a&#x69;&#108;&#46;&#99;&#111;&#x6D;">&#106;&#x61;&#x79;&#x68;&#x61;&#110;&#64;&#103;&#x6D;a&#x69;&#108;&#46;&#99;&#111;&#x6D;</a></p>
+<p>Email: Jay Han <a href="&#x6D;&#x61;&#x69;&#108;t&#x6F;:&#106;&#97;&#x79;&#x68;&#x61;&#x6E;&#64;&#x67;ma&#105;&#x6C;&#x2E;&#x63;&#x6F;&#x6D;">&#106;&#97;&#x79;&#x68;&#x61;&#x6E;&#64;&#x67;ma&#105;&#x6C;&#x2E;&#x63;&#x6F;&#x6D;</a></p>

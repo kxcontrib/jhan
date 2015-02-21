@@ -12,7 +12,7 @@ histogram plot in a window in subsecond on a modern laptop.
 (Sandy Bridge i7 from 2012 takes about 600ms).
 There is no copying or transfering data from q to PLplot as
 qplplot passes a pointer so that plotting is done with
-in-place data managed by kdb+. Compare running `x05.q` and `x05w100M.q`.
+in-place data managed by kdb+. Compare running example scripts `x05.q` and `x05w100M.q`.
 
 ## version
 As of today (2015.02.16), qplplot supports most of PLplot 5.10,
@@ -53,7 +53,8 @@ Translating API of PLplot to q or qplplot is easy once types are understood:
     (char *, input)         `sym or -11h
     (char *, output)        `sym or -11h, N.B. output parameter
 
-Therefore `plline(PLINT n, const PLFLT* x, const PLFLT* y)` would be translated into q as
+Therefore [`plline(PLINT n, const PLFLT* x, const PLFLT* y)`](http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plline.html)
+would be translated into q as
 `pl.line[n; x; y]` where `n:count x`; `x` and `y`, vectors of float (of equal counts).
 
 Here is a short example that draws a random walk across 1000 points:
@@ -65,22 +66,25 @@ Here is a short example that draws a random walk across 1000 points:
     K:1000
     x:K?1f
     y:K?1f
-    pl.line[K;x;y] / plline(PLINT n, const PLFLT*, const PLFLT* y); // draw linesrandom walk across 1000 points.
+    pl.line[K;x;y] / plline(PLINT n, const PLFLT*, const PLFLT* y); // draw lines of random walk across 1000 points.
     pl.lab[`x; `y; `$"random walk across 1000 points"]
     / pllab(const char* xlabel, const char* ylabel, const char* tlabel);
     pl.end[] / plend();
     \\
 
-Many PLplot APIs use PLplot's exported C symbols or constants, for example, `plmesh()`
+Many PLplot APIs use PLplot's exported C symbols or constants. For example,
+[`plmesh()`](http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plmesh.html)
 expects a `PLINT` `opt` argument that can be either `DRAW_LINEX`, `DRAW_LINEY`, or `DRAW_LINEXY`.
 In qplplot's `pl.mesh[]`, these `opt` values are q symbol keys to `pl`:
 ``pl`DRAW_LINEX``, ``pl`DRAW_LINEY`` or ``pl`DRAW_LINEXY``.
 
-`plcol0()` expects an integer argument representing a color.
+[`plcol0()`](http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plcol0.html)
+expects an integer argument representing a color.
 Qplplot lets users to use color names listed in the `plcol0` reference,
 e.g. `pl.col0[0]` works as well as ``pl.col0[pl`black]``.
 
-Most PLplot APIs return void but some return an atom:
+Most PLplot APIs return void but some return an output parameter (marked `output` type). For example,
+[`plgver()`](http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plgver.html)
 
     plgver(char* p_ver);
         p_ver (char *, output)
@@ -91,8 +95,8 @@ Qplplot's counterpart returns output parameter `p_ver` as a symbol:
     q)pl.gver[]
     `5.10.0
 
-Some other APIs return multiple values via output parameters.
-These multiple return values are wrapped in a dictionary in qplplot. For example,
+Some other APIs return multiple output parameters and qplplot wraps them in a dictionary. For example,
+[`plgchr()`](http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plgchr.html)
 
     q)pl.gchr[] / plgchr(&p_def, &p_ht); in C
     p_def| 7.5
@@ -102,6 +106,7 @@ Notice that symbol keys of the output dictionary match the names of output
 parameters in PLplot's API reference.
 
 ## further hints for translation
+* A qplplot function name is same as PLplot's original name except for a `.` between `pl` and the rest of the name.
 * Most PLplot API names are abbreviations:
     * `plg*()` APIs are usually getter functions, e.g. `plgver()` or `pl.gver[]` above.
     * `pls*()` APIs are usually setter functions, e.g. `plsdev(const char* devname)` or ``pl.sdev[`devname]``.
@@ -127,7 +132,8 @@ However, PLplot APIs with more than 8 arguments are expressed differently in qpl
 
 * Arguments are grouped logically into lists. See the `pl.*` functions below and cross-check with PLplot's reference.
 * Often, argument for count and other bookkeeping arguments are elided.
-* `plcont()` uses a callback function: a user-defined one as well as built-in
+* [`plcont()`](http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plcont.html)
+  uses a callback function: a user-defined one as well as built-in
   `pltr0`, `pltr1` or, `pltr2`.
   Qplplot's `pl.cont*` come with four flavors: `pl.cont[]`, `pl.cont0[]`,
   `pl.cont1[]` and `pl.cont2[]`.
@@ -319,10 +325,11 @@ Qplplot APIs often have many arguments and users can mistype arguments:
     pldtik: magnitude of specified tick spacing is much too small
     Program aborted
 
-According to plbox(3plplot) ytick argument (1 in the above example)
+According to [`plbox()`](http://plplot.sourceforge.net/docbook-manual/plplot-html-5.10.0/plbox.html),
+`ytick` argument (`1` in the above example)
 should be `PLFLT` or `` `float ``, not `PLINT` or `` `int ``.
 
-Fix is to change `1` to `1f`:
+Fix `1` to `1f`:
 
     pl.box[`$"bcnstd"; 14 * 24.0 * 60.0 * 60.0; 14; `$"bcnstv"; 1f; 4];
 
@@ -361,7 +368,7 @@ and converting 2-D matrix inputs.
 * Distant future: high-level APIs wrapping the current low-level qplplot APIs for productivity.
 
 # License
-Qplplot is licensed under LGPL, the same license used by PLplot. See `COPYING.LIB`.
+Qplplot is licensed under GNU Library General Public License 2.0, the same license used by PLplot. See `COPYING.LIB`.
 
 # Copyright
 Qplplot is copyright (c) 2015 Jaeheum Han All rights reserved.
