@@ -1,12 +1,9 @@
 \l qplplot.q
-//pl.sdev`xwin
-
 XPTS:35i            // Data points in x
 YPTS:46i           // Data points in y
 LEVELS:10i
 
-DRAW_LINEXY:3i
-opt:(DRAW_LINEXY;DRAW_LINEXY)
+opt:(pl`DRAW_LINEXY;pl`DRAW_LINEXY)
 alt:33.0 17.0;
 az:24.0 115.0;
 
@@ -38,30 +35,26 @@ pow:xexp;
 i:0; do[XPTS;
         xx:x[i];
         j:0; do[YPTS; yy:y[j];
-            /z0:(3.*(1.-xx)*(1.-xx) * exp[(neg xx*xx) - (yy+1.)*(yy+1.)]);
-            /z1:10. * (((xx % 5.) - pow[xx; 3.]) - pow[yy; 5.]);
-            /z11:exp[(neg xx*xx)-yy*yy];
-            /z2:((1. % 3.) * exp[(neg (xx+1)*(xx+1)) - yy*yy]);
-            .[`z; (i;j); :;
-                (3.*pow[1.-xx;2] * exp[(neg pow[xx;2]) - pow[yy+1.; 2]]) -
-                (10. * (((xx % 5.) - pow[xx; 3.]) - pow[yy; 5.]) * exp[(neg pow[xx;2]) - pow[yy; 2]]) -
-                ((1. % 3.) * exp[(neg pow[xx+1.;2]) - pow[yy;2]])];
+            z0:(3.*(1.-xx)*(1.-xx) * exp[(neg xx*xx) - (yy+1.)*(yy+1.)]);
+            z1:10. * (((xx % 5.) - pow[xx; 3.]) - pow[yy; 5.]);
+            z11:exp[(neg xx*xx)-yy*yy];
+            z2:((1. % 3.) * exp[(neg (xx+1)*(xx+1)) - yy*yy]);
+            .[`z; (i;j); :; (z0-(z1*z11))-z2];
+                /(3.*pow[1.-xx;2] * exp[(neg pow[xx;2]) - pow[yy+1.; 2]])
+                /- (10. * (((xx % 5.) - pow[xx; 3.]) - pow[yy; 5.]) * exp[(neg pow[xx;2]) - pow[yy; 2]])
+                /- ((1. % 3.) * exp[(neg pow[xx+1.;2]) - pow[yy;2]])];
             //if[z[i][j] < -1.; .[`z; (i;j); : ; -1f]];
-            //0N!(string i),"	",(string j),"	",(string xx),"	",(string yy),"	",(string z0),"	",(string z1),"	",(string z11),"	",(string z2),"	",(string (`z . (i;j)));
             j+:1];
         i+:1];
 
 // plMinMax2dGrid
 zmax:max raze z;
 zmin:min raze z;
-step:(zmax-zmin) div (LEVELS+1);
-clevel:zmin+step+step*til LEVELS;
+nlevel:LEVELS;
+step:(zmax-zmin) % (nlevel+1);
+clevel:zmin+step+step*til nlevel;
 
 cmap1_init[];
-
-MAG_COLOR:4i
-BASE_CONT:8i
-bor:{0b sv (0b vs x) | (0b vs y)}
 
 k:0; do[2;
     i:0; do[4;
@@ -69,7 +62,7 @@ k:0; do[2;
         pl.col0[pl`red];
         pl.vpor[0.0; 1.0; 0.0; 0.9];
         pl.wind[-1.0; 1.0; -1.0; 1.5];
-        // pl.w3d takes three arguments.
+        // N.B. pl.w3d takes three arguments.
         pl.w3d[(1.0; 1.0; 1.2); (-3.0; 3.0; -3.0; 3.0; zmin; zmax); (alt[k]; az[k])];
         // N.B. pl.box3 takes three arguments.
         pl.box3[(`$"bnstu"; `$"x axis"; 0.0; 0i); (`$"bnstu"; `$"y axis"; 0.0; 0i); (`$"bcdmnstuv"; `$"z axis"; 0.0; 4i)];
@@ -77,11 +70,11 @@ k:0; do[2;
         // wireframe plot
         if[i=0; pl.mesh[x; y; z; XPTS; YPTS; opt[k]]];
         // magnitude colored wireframe plot
-        if[i=1; pl.mesh[x; y; z; XPTS; YPTS; bor[opt[k]; MAG_COLOR]]];
+        if[i=1; pl.mesh[x; y; z; XPTS; YPTS; bor[opt[k]; pl`MAG_COLOR]]];
         // magnitude colored wireframe plot with sides
-        if[i=2; pl.ot3d[x; y; z; XPTS; YPTS; bor[opt[k]; MAG_COLOR]; 1]];
+        if[i=2; pl.ot3d[x; y; z; XPTS; YPTS; bor[opt[k]; pl`MAG_COLOR]; 1]];
         // magnitude colored wireframe plot with base contour
-        if[i=3; pl.meshc[x; y; z; XPTS; YPTS; bor[bor[opt[k]; MAG_COLOR]; BASE_CONT]; clevel; nlevel:LEVELS]];
+        if[i=3; pl.meshc[x; y; z; XPTS; YPTS; bor[bor[opt[k]; pl`MAG_COLOR]; pl`BASE_CONT]; clevel; nlevel:LEVELS]];
         pl.col0[pl`green];
         pl.mtex[`$"t"; 1.0; 0.5; 0.5; title[k]];
         i+:1];
